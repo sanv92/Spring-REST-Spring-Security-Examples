@@ -68,6 +68,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     //.loginProcessingUrl("/perform_login")
                     .defaultSuccessUrl("/")
                     .failureUrl("/login?error=true")
+                    .successForwardUrl("/")
                     //.failureHandler(authenticationFailureHandler())
                     .permitAll()
                     .and()
