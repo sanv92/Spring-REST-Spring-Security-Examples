@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header">Header</div>
+
+<div class="container-fluid pt-3">
+    <div class="row">
+        <div class="col-sm" layout:fragment="content"></div>
+    </div>
+</div>
+
+</body>
+</html>

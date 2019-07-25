@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+
+<div class="container-fluid pt-3">
+    <div class="row">
+
+        <h1>Home Page</h1>
+
+        <div th:if="${user}">
+            <dl>
+                <dt>User name:</dt>
+                <dd th:text="${user.username}">-</dd>
+                <dt>User email:</dt>
+                <dd th:text="${user.email}">-</dd>
+            </dl>
+            <a href="/perform_logout">Logout</a>
+        </div>
+        <div th:unless="${user}">
+            <div>Hi, Guest</div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

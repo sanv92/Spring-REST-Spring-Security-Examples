@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+
+<div class="container-fluid pt-3">
+    <div class="row">
+
+        <h1>Login</h1>
+        <form action="/login" method='POST'>
+            <table>
+                <tr>
+                    <td>User:</td>
+                    <td>
+                        <input type='text' name='username' value=''>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td>
+                        <input type='password' name='password'/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input name="submit" type="submit" value="submit"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input name="remember-me" type="checkbox"/>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>
