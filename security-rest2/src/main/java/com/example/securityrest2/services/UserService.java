@@ -95,4 +95,21 @@ public class UserService {
     public String getUsers4() {
         return "admin-test4";
     }
+
+    @Secured(AuthoritiesConstants.ADMIN)
+    public String getUsers5() {
+        return "admin-test5";
+    }
+
+    public String getUsers6() {
+        return "admin-test6";
+    }
+
+    public String getUsers7() {
+        return "admin-test7";
+    }
+
+    public String getUserById() {
+        return "get-user-by-id";
+    }
 }

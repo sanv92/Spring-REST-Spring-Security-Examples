@@ -65,8 +65,7 @@ public class DatabaseSeeder {
         user2.setRoles(
                 new HashSet<>(
                         Arrays.asList(
-                                roles.get(0),
-                                roles.get(1)
+                                roles.get(0)
                         )
                 )
         );
@@ -79,8 +78,7 @@ public class DatabaseSeeder {
         user3.setRoles(
                 new HashSet<>(
                         Arrays.asList(
-                                roles.get(0),
-                                roles.get(1)
+                                roles.get(0)
                         )
                 )
         );

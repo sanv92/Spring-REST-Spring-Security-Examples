@@ -218,7 +218,10 @@ public class SecurityConfiguration {
         private static final RequestMatcher URLS = new OrRequestMatcher(
                 new AntPathRequestMatcher("/users/test2"),
                 new AntPathRequestMatcher("/users/test3"),
-                new AntPathRequestMatcher("/users/test4")
+                new AntPathRequestMatcher("/users/test4"),
+                new AntPathRequestMatcher("/users/test5"),
+                new AntPathRequestMatcher("/users/test7", HttpMethod.POST.name()),
+                new AntPathRequestMatcher("/users/test/*")
         );
 
         private final UserDetailsService userDetailsService;
@@ -266,7 +269,10 @@ public class SecurityConfiguration {
                         .authorizeRequests()
                         .antMatchers("/users/test2").authenticated()
                         .antMatchers("/users/test3").hasAuthority(AuthoritiesConstants.ADMIN)
-                        .antMatchers("/users/test4").hasAuthority(AuthoritiesConstants.ADMIN);
+                        .antMatchers("/users/test4").hasAuthority(AuthoritiesConstants.ADMIN)
+                        .antMatchers("/users/test5").permitAll()
+                        .antMatchers("/users/test6").permitAll()
+                        .antMatchers(HttpMethod.POST, "/users/test7").authenticated();
         }
 
         @Override

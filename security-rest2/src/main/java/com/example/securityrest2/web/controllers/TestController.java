@@ -1,15 +1,18 @@
 package com.example.securityrest2.web.controllers;
 
 import com.example.securityrest2.services.UserService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/users")
-public class UserController {
+@RequestMapping(path = "/tests")
+public class TestController {
 
     private final UserService usersService;
 
-    public UserController(UserService usersService) {
+    public TestController(UserService usersService) {
         this.usersService = usersService;
     }
 
@@ -48,18 +51,8 @@ public class UserController {
         return usersService.getUsers6();
     }
 
-    @GetMapping("/test7")
-    public String getUsers7() {
-        return usersService.getUsers7();
-    }
-
-    @PostMapping("/test7")
-    public String createUsers7() {
-        return usersService.getUsers7();
-    }
-
-    @GetMapping("/test/{userId}")
-    public String getUsers7(@PathVariable("userId") Long userId) {
+    @GetMapping("/test/{testId}")
+    public String getUsers7(@PathVariable("testId") Long testId) {
         return usersService.getUserById();
     }
 }
