@@ -1,7 +1,7 @@
 package com.example.securityrest2.security;
 
-import com.example.securityrest2.domain.AuthoritiesConstants;
 import com.example.securityrest2.repositories.TokenRepository;
+import com.example.securityrest2.domain.AuthoritiesConstants;
 import com.example.securityrest2.repositories.UserRepository;
 import com.example.securityrest2.security.handlers.RestAccessDeniedHandler;
 import com.example.securityrest2.security.handlers.RestAuthenticationEntryPoint;

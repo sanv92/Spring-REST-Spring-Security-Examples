@@ -1,18 +1,17 @@
-package com.example.securityrest2.services;
+package com.example.securityrest3.services;
 
-import com.example.securityrest2.repositories.RoleRepository;
-import com.example.securityrest2.domain.AuthoritiesConstants;
-import com.example.securityrest2.domain.Role;
-import com.example.securityrest2.domain.User;
-import com.example.securityrest2.repositories.UserRepository;
-import com.example.securityrest2.web.dtos.UserDto;
+import com.example.securityrest3.security.model.AuthoritiesConstants;
+import com.example.securityrest3.domain.Role;
+import com.example.securityrest3.domain.User;
+import com.example.securityrest3.security.repositories.RoleRepository;
+import com.example.securityrest3.security.repositories.UserRepository;
+import com.example.securityrest3.web.dtos.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.HashSet;
 
 @Service
 public class UserService {
@@ -66,7 +65,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(accountDto.getPassword()));
         user.setEmail(accountDto.getEmail());
         user.setStatus(User.Status.ACTIVE);
-        user.setRoles(new HashSet<>(Arrays.asList(role)));
+        user.setRoles(Arrays.asList(role));
 
         return userRepository.save(user);
     }

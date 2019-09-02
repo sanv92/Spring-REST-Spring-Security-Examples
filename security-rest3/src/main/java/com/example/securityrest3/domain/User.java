@@ -1,4 +1,4 @@
-package com.example.securityrest2.domain;
+package com.example.securityrest3.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -37,6 +37,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(name = "refresh_token", length = 500)
+    private String refreshToken;
+
     @JsonIgnore
     @Transient
     private transient String confirmPassword;
@@ -50,7 +53,7 @@ public class User {
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "role_id")}
     )
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 
     @JsonIgnore
     @Transient
@@ -98,11 +101,11 @@ public class User {
         this.confirmPassword = confirmPassword;
     }
 
-    public Set<Role> getRoles() {
+    public List<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
 
@@ -128,6 +131,14 @@ public class User {
 
     public void setTokens(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     @Override

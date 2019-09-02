@@ -1,4 +1,4 @@
-package com.example.securityrest2;
+package com.example.securityrest3;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -20,10 +20,11 @@
         <module>security-thymelaf</module>
         <module>security-rest1</module>
         <module>security-rest2</module>
+        <module>security-rest3</module>
     </modules>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>12</java.version>
         <maven.build.helper.version>3.0.0</maven.build.helper.version>
         <maven.surefire.version>2.22.0</maven.surefire.version>
         <maven.failsafe.version>2.22.0</maven.failsafe.version>
@@ -35,6 +36,7 @@
         <maven.springfox-swagger2>2.9.2</maven.springfox-swagger2>
         <maven.junit>5.4.2</maven.junit>
         <maven.commons-lang3>3.0</maven.commons-lang3>
+        <maven.spring-security-jwt>1.0.10.RELEASE</maven.spring-security-jwt>
     </properties>
 
     <dependencies>
@@ -155,6 +157,24 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-jwt</artifactId>
+            <version>${maven.spring-security-jwt}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.10.7</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.10.7</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.10.7</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
