@@ -70,13 +70,10 @@ public class RefreshTokenEndpoint {
             throw new InvalidJwtToken();
         }
 
-        final var user = userRepository.findByUsername(refreshUsername)
-                .orElseThrow(InvalidJwtToken::new);
-
+        final var user = userRepository.findByUsername(refreshUsername).orElseThrow(InvalidJwtToken::new);
         if (!hasAuthorities(user)) {
             throw new InsufficientAuthenticationException("User has no roles assigned");
         }
-
         if (!verifyToken(user.getRefreshToken(), refreshJwtToken.getToken())) {
             throw new InvalidJwtToken();
         }
