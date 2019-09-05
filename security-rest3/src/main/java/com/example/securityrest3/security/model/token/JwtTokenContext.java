@@ -1,15 +1,15 @@
-package com.example.securityrest3.security.model;
+package com.example.securityrest3.security.model.token;
 
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
 
-public class UserContext {
+public class JwtTokenContext {
 
     private final String username;
     private final List<GrantedAuthority> authorities;
 
-    public UserContext(String username, List<GrantedAuthority> authorities) {
+    public JwtTokenContext(String username, List<GrantedAuthority> authorities) {
         this.username = username;
         this.authorities = authorities;
     }

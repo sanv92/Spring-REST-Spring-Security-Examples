@@ -1,10 +1,10 @@
 package com.example.securityrest3.security.model.token;
 
-public final class AccessJwtToken implements JwtToken {
+public final class RefreshJwtToken implements JwtToken {
 
     private final String token;
 
-    public AccessJwtToken(final String token) {
+    public RefreshJwtToken(final String token) {
         this.token = token;
     }
 

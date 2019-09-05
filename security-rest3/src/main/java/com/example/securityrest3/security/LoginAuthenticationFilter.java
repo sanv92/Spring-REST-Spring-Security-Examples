@@ -42,8 +42,8 @@ public class LoginAuthenticationFilter extends UsernamePasswordAuthenticationFil
         setFilterProcessesUrl(SecurityProperties.LOGIN_URL);
     }
 
-    @Override
     @Transactional
+    @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         super.doFilter(req, res, chain);
     }
@@ -57,7 +57,7 @@ public class LoginAuthenticationFilter extends UsernamePasswordAuthenticationFil
         try {
             var loginRequest = mapper.readValue(request.getReader(), LoginRequest.class);
 
-            if (loginRequest.getUsername().isBlank() || loginRequest.getPassword().isBlank()) {
+            if (isCredentialsProvided(loginRequest.getUsername(), loginRequest.getPassword())) {
                 throw new AuthenticationServiceException("Username or Password not provided");
             }
 
@@ -70,4 +70,7 @@ public class LoginAuthenticationFilter extends UsernamePasswordAuthenticationFil
         }
     }
 
+    private boolean isCredentialsProvided(String username, String password) {
+        return username.isBlank() || password.isBlank();
+    }
 }

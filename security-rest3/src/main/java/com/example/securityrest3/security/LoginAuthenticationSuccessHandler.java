@@ -3,7 +3,7 @@ package com.example.securityrest3.security;
 import com.example.securityrest3.domain.User;
 import com.example.securityrest3.security.details.MyUserDetails;
 import com.example.securityrest3.security.dtos.UserDto;
-import com.example.securityrest3.security.model.UserContext;
+import com.example.securityrest3.security.model.token.JwtTokenContext;
 import com.example.securityrest3.security.model.token.JwtTokenFactory;
 import com.example.securityrest3.security.repositories.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,9 +56,9 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        final var userContext = new UserContext(userDetails.getUsername(), new ArrayList<>(userDetails.getAuthorities()));
-        final var accessToken = tokenFactory.createAccessJwtToken(userContext);
-        final var refreshToken = tokenFactory.createRefreshToken(userContext);
+        final var tokenContext = new JwtTokenContext(userDetails.getUsername(), new ArrayList<>(userDetails.getAuthorities()));
+        final var accessToken = tokenFactory.createAccessJwtToken(tokenContext);
+        final var refreshToken = tokenFactory.createRefreshToken(tokenContext);
 
         final var user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow(UserNotFoundException::new);
         user.setRefreshToken(refreshToken.getToken());

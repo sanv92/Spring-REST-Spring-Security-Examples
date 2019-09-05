@@ -1,12 +1,9 @@
 package com.example.securityrest3.security.model.token;
 
 import com.example.securityrest3.security.config.SecurityProperties;
-import com.example.securityrest3.security.model.UserContext;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,9 +19,7 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtTokenFactory.class);
-
-    private static final class TokenExpiredTokenException extends AuthenticationException {
+    public static final class TokenExpiredTokenException extends AuthenticationException {
 
         private static final long serialVersionUID = -5959543783324224864L;
 
@@ -51,7 +46,7 @@ public class JwtTokenFactory {
         }
     }
 
-    public AccessJwtToken createAccessJwtToken(UserContext userContext) {
+    public AccessJwtToken createAccessJwtToken(JwtTokenContext userContext) {
         if (userContext.getUsername().isBlank()) {
             throw new JwtTokenException("Cannot create JWT Token without username");
         }
@@ -85,7 +80,7 @@ public class JwtTokenFactory {
         return new AccessJwtToken(token);
     }
 
-    public JwtToken createRefreshToken(UserContext userContext) {
+    public JwtToken createRefreshToken(JwtTokenContext userContext) {
         if (userContext.getUsername().isBlank()) {
             throw new JwtTokenException("Cannot create JWT Token without username");
         }
@@ -119,13 +114,12 @@ public class JwtTokenFactory {
     public Jws<Claims> parseClaims(String token, String signingKey) {
         try {
             return Jwts.parser()
-                    .setSigningKey(signingKey.getBytes()).parseClaimsJws(token);
+                    .setSigningKey(Keys.hmacShaKeyFor(signingKey.getBytes()))
+                    .parseClaimsJws(token);
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException | SecurityException ex) {
-            log.error("Invalid JWT Token", ex);
             throw new BadCredentialsException("Invalid JWT token: ", ex);
-        } catch (ExpiredJwtException expiredEx) {
-            log.info("JWT Token is expired", expiredEx);
-            throw new TokenExpiredTokenException(token, "JWT Token expired", expiredEx);
+        } catch (ExpiredJwtException ex) {
+            throw new TokenExpiredTokenException(token, "JWT Token expired", ex);
         }
     }
 }

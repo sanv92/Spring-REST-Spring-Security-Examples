@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MyUserDetails implements UserDetails {
 
@@ -31,17 +32,16 @@ public class MyUserDetails implements UserDetails {
     }
 
     private Set<GrantedAuthority> getAuthorities(List<Role> roles) {
-        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+        return roles
+                .stream()
+                .map(authority -> new SimpleGrantedAuthority(
+                        Role.Type.valueOf(authority.getName().name()).getAuthority()
+                ))
+                .collect(Collectors.toSet());
+    }
 
-        for (Role role : roles) {
-            grantedAuthorities.add(
-                    new SimpleGrantedAuthority(
-                            Role.Type.valueOf(role.getName().name()).getAuthority()
-                    )
-            );
-        }
-
-        return grantedAuthorities;
+    public String getRefreshToken() {
+        return user.getRefreshToken();
     }
 
     @Override

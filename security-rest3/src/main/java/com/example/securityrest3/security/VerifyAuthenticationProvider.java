@@ -67,10 +67,10 @@ public class VerifyAuthenticationProvider extends AbstractUserDetailsAuthenticat
     @Override
     public UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) {
         final var tokenAuthentication = (TokenAuthentication) authentication;
-        final var rawToken = tokenAuthentication.getToken();
+        final var accessToken = tokenAuthentication.getToken();
 
         try {
-            final var jwsClaims = jwtTokenFactory.parseClaims(rawToken, SecurityProperties.SECRET);
+            final var jwsClaims = jwtTokenFactory.parseClaims(accessToken, SecurityProperties.SECRET);
             final var parsedUsername = jwsClaims.getBody().getSubject();
 
             if (parsedUsername.isEmpty()) {
@@ -89,15 +89,15 @@ public class VerifyAuthenticationProvider extends AbstractUserDetailsAuthenticat
 
             return new MyUserDetails(user);
         } catch (ExpiredJwtException exception) {
-            log.warn("Request to parse expired JWT : {} failed : {}", rawToken, exception.getMessage());
+            log.warn("Request to parse expired JWT : {} failed : {}", accessToken, exception.getMessage());
         } catch (UnsupportedJwtException exception) {
-            log.warn("Request to parse unsupported JWT : {} failed : {}", rawToken, exception.getMessage());
+            log.warn("Request to parse unsupported JWT : {} failed : {}", accessToken, exception.getMessage());
         } catch (MalformedJwtException exception) {
-            log.warn("Request to parse invalid JWT : {} failed : {}", rawToken, exception.getMessage());
+            log.warn("Request to parse invalid JWT : {} failed : {}", accessToken, exception.getMessage());
         } catch (SignatureException exception) {
-            log.warn("Request to parse JWT with invalid signature : {} failed : {}", rawToken, exception.getMessage());
+            log.warn("Request to parse JWT with invalid signature : {} failed : {}", accessToken, exception.getMessage());
         } catch (IllegalArgumentException exception) {
-            log.warn("Request to parse empty or null JWT : {} failed : {}", rawToken, exception.getMessage());
+            log.warn("Request to parse empty or null JWT : {} failed : {}", accessToken, exception.getMessage());
         }
 
         return null;

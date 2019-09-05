@@ -1,84 +1,113 @@
 package com.example.securityrest3.security.endpoint;
 
+import com.example.securityrest3.domain.User;
 import com.example.securityrest3.security.config.SecurityProperties;
-import com.example.securityrest3.security.details.MyUserDetailsService;
+import com.example.securityrest3.security.details.MyUserDetails;
 import com.example.securityrest3.security.dtos.TokenDto;
-import com.example.securityrest3.security.model.UserContext;
+import com.example.securityrest3.security.model.token.AccessJwtToken;
+import com.example.securityrest3.security.model.token.JwtTokenContext;
 import com.example.securityrest3.security.model.token.JwtTokenFactory;
-import com.example.securityrest3.security.model.token.RawAccessJwtToken;
-import com.example.securityrest3.security.repositories.TokenRepository;
-import org.apache.tomcat.jni.Time;
+import com.example.securityrest3.security.model.token.RefreshJwtToken;
+import com.example.securityrest3.security.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @RestController
 public class RefreshTokenEndpoint {
 
     private static final class InvalidJwtToken extends RuntimeException {
-        private static final long serialVersionUID = -294671188037098603L;
+
+        InvalidJwtToken() {
+            super();
+        }
+
+        @Override
+        public String getMessage() {
+            return "Invalid JWT token";
+        }
     }
 
     private final JwtTokenFactory jwtTokenFactory;
 
-    private final MyUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
-    private final TokenRepository tokenRepository;
-
-    public RefreshTokenEndpoint(JwtTokenFactory jwtTokenFactory, MyUserDetailsService userDetailsService, TokenRepository tokenRepository) {
+    @Autowired
+    public RefreshTokenEndpoint(JwtTokenFactory jwtTokenFactory, UserRepository userRepository) {
         this.jwtTokenFactory = jwtTokenFactory;
-        this.userDetailsService = userDetailsService;
-        this.tokenRepository = tokenRepository;
+        this.userRepository = userRepository;
     }
 
+    @Transactional
     @PostMapping("/refresh-token")
-    public TokenDto refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        final var rawAccessToken = new RawAccessJwtToken(refreshTokenRequest.getAccessToken());
-        final var rawRefreshToken = new RawAccessJwtToken(refreshTokenRequest.getRefreshToken());
+    public TokenDto refreshToken(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+        final var accessJwtToken = new AccessJwtToken(refreshTokenRequest.getAccessToken());
+        final var refreshJwtToken = new RefreshJwtToken(refreshTokenRequest.getRefreshToken());
 
-        if (!isAccessTokenExpired(rawAccessToken)) {
+        if (!isAccessTokenExpired(accessJwtToken)) {
             throw new InvalidJwtToken();
         }
 
-        final var refreshClaimsJws = jwtTokenFactory.parseClaims(rawRefreshToken.getToken(), SecurityProperties.SECRET);
-        final var userDetails = userDetailsService.loadUserByUsername(refreshClaimsJws.getBody().getSubject());
-        if (!hasAuthorities(userDetails)) {
+        final var refreshClaimsJws = jwtTokenFactory.parseClaims(refreshJwtToken.getToken(), SecurityProperties.SECRET);
+        final var user = userRepository.findByUsername(refreshClaimsJws.getBody().getSubject())
+                .orElseThrow(InvalidJwtToken::new);
+
+        if (!hasAuthorities(user)) {
             throw new InsufficientAuthenticationException("User has no roles assigned");
         }
 
-        tokenRepository.findByValue(rawRefreshToken.getToken()).orElseThrow(InvalidJwtToken::new);
+        if (!verifyToken(user.getRefreshToken(), refreshJwtToken.getToken())) {
+            throw new InvalidJwtToken();
+        }
 
-        final var userContext = new UserContext(
-                userDetails.getUsername(),
-                new ArrayList<>(userDetails.getAuthorities())
+        final var tokenContext = new JwtTokenContext(
+                user.getUsername(),
+                new ArrayList<>(new MyUserDetails(user).getAuthorities())
         );
+
+        final var refreshToken = jwtTokenFactory.createRefreshToken(tokenContext).getToken();
+        user.setRefreshToken(refreshToken);
 
         return new TokenDto(
-                jwtTokenFactory.createAccessJwtToken(userContext).getToken(),
-                jwtTokenFactory.createRefreshToken(userContext).getToken()
+                jwtTokenFactory.createAccessJwtToken(tokenContext).getToken(),
+                refreshToken
         );
     }
 
-    private boolean isAccessTokenExpired(RawAccessJwtToken rawAccessJwtToken) {
+    private boolean isAccessTokenExpired(AccessJwtToken accessJwtToken) {
         try {
-            final var accessClaimsJws = jwtTokenFactory.parseClaims(rawAccessJwtToken.getToken(), SecurityProperties.SECRET);
-            long accessTokenTime = accessClaimsJws.getBody().getExpiration().getTime();
-            long diff = accessTokenTime - Time.now();
-            return diff >= 0;
-        } catch (RuntimeException ex) {
+            final var accessClaimsJws = jwtTokenFactory.parseClaims(accessJwtToken.getToken(), SecurityProperties.SECRET);
+            final var time = System.currentTimeMillis();
+            final var accessTokenTime = accessClaimsJws.getBody().getExpiration().getTime();
+            final var diff = accessTokenTime - time;
+            return diff <= 0;
+        } catch (JwtTokenFactory.TokenExpiredTokenException ex) {
             return true;
+        } catch (Exception ex) {
+            throw new InvalidJwtToken();
         }
     }
 
-    private boolean hasAuthorities(UserDetails userDetails) {
-        if (userDetails.getAuthorities() == null) {
-            return false;
+    private boolean hasAuthorities(User user) {
+        if (Optional.ofNullable(user.getRoles()).isPresent()) {
+            return !user.getRoles().isEmpty();
         }
 
-        return !userDetails.getAuthorities().isEmpty();
+        return false;
     }
 
+    private boolean verifyToken(String refreshToken, String payloadToken) {
+        return Optional.ofNullable(refreshToken)
+                .orElseThrow(InvalidJwtToken::new).equals(
+                        Optional.ofNullable(payloadToken)
+                                .orElseThrow(InvalidJwtToken::new)
+                );
+    }
 }
