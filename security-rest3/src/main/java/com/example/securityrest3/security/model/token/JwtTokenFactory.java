@@ -24,19 +24,30 @@ public class JwtTokenFactory {
         private static final long serialVersionUID = -5959543783324224864L;
 
         private final String token;
+        private final ExpiredJwtException claims;
 
         public TokenExpiredTokenException(String msg, String token) {
             super(msg);
             this.token = token;
+            this.claims = null;
         }
 
-        public TokenExpiredTokenException(String token, String msg, Throwable t) {
+        public TokenExpiredTokenException(String token, String msg, ExpiredJwtException t) {
             super(msg, t);
             this.token = token;
+            this.claims = t;
         }
 
-        public String token() {
+        public String getToken() {
             return this.token;
+        }
+
+        public Claims getBody() {
+            if (Optional.ofNullable(claims).isPresent()) {
+                return claims.getClaims();
+            }
+
+            return null;
         }
     }
 
@@ -74,6 +85,7 @@ public class JwtTokenFactory {
                                 .plusMinutes(1)
                                 .atZone(ZoneId.systemDefault()).toInstant())
                 )
+                .claim("id", userContext.getUuid())
                 .claim("roles", roles)
                 .compact();
 
@@ -105,6 +117,7 @@ public class JwtTokenFactory {
                                 .plusDays(1)
                                 .atZone(ZoneId.systemDefault()).toInstant())
                 )
+                .claim("id", userContext.getUuid())
                 .claim("roles", roles)
                 .compact();
 

@@ -9,6 +9,7 @@ import com.example.securityrest3.security.model.token.JwtTokenContext;
 import com.example.securityrest3.security.model.token.JwtTokenFactory;
 import com.example.securityrest3.security.model.token.RefreshJwtToken;
 import com.example.securityrest3.security.repositories.UserRepository;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,12 +52,25 @@ public class RefreshTokenEndpoint {
         final var accessJwtToken = new AccessJwtToken(refreshTokenRequest.getAccessToken());
         final var refreshJwtToken = new RefreshJwtToken(refreshTokenRequest.getRefreshToken());
 
+        final var accessClaims = getAccessToken(accessJwtToken);
+        final var refreshClaims = getRefreshToken(refreshJwtToken);
         if (!isAccessTokenExpired(accessJwtToken)) {
             throw new InvalidJwtToken();
         }
 
-        final var refreshClaimsJws = jwtTokenFactory.parseClaims(refreshJwtToken.getToken(), SecurityProperties.SECRET);
-        final var user = userRepository.findByUsername(refreshClaimsJws.getBody().getSubject())
+        final var refreshId = accessClaims.get("id", String.class);
+        final var accessId = refreshClaims.get("id", String.class);
+        if (!verifyUuid(accessId, refreshId)) {
+            throw new InvalidJwtToken();
+        }
+
+        final var accessUsername = accessClaims.getSubject();
+        final var refreshUsername = refreshClaims.getSubject();
+        if (!verifyUsername(accessUsername, refreshUsername)) {
+            throw new InvalidJwtToken();
+        }
+
+        final var user = userRepository.findByUsername(refreshUsername)
                 .orElseThrow(InvalidJwtToken::new);
 
         if (!hasAuthorities(user)) {
@@ -72,13 +86,29 @@ public class RefreshTokenEndpoint {
                 new ArrayList<>(new MyUserDetails(user).getAuthorities())
         );
 
+        final var accessToken = jwtTokenFactory.createAccessJwtToken(tokenContext).getToken();
         final var refreshToken = jwtTokenFactory.createRefreshToken(tokenContext).getToken();
+
         user.setRefreshToken(refreshToken);
 
         return new TokenDto(
-                jwtTokenFactory.createAccessJwtToken(tokenContext).getToken(),
+                accessToken,
                 refreshToken
         );
+    }
+
+    private Claims getAccessToken(AccessJwtToken accessJwtToken) {
+        try {
+            return jwtTokenFactory.parseClaims(accessJwtToken.getToken(), SecurityProperties.SECRET).getBody();
+        } catch (JwtTokenFactory.TokenExpiredTokenException ex) {
+            return ex.getBody();
+        } catch (Exception ex) {
+            throw new InvalidJwtToken();
+        }
+    }
+
+    private Claims getRefreshToken(RefreshJwtToken refreshJwtToken) {
+        return jwtTokenFactory.parseClaims(refreshJwtToken.getToken(), SecurityProperties.SECRET).getBody();
     }
 
     private boolean isAccessTokenExpired(AccessJwtToken accessJwtToken) {
@@ -93,6 +123,14 @@ public class RefreshTokenEndpoint {
         } catch (Exception ex) {
             throw new InvalidJwtToken();
         }
+    }
+
+    private boolean verifyUsername(String accessUsername, String refreshUsername) {
+        return accessUsername.equals(refreshUsername);
+    }
+
+    private boolean verifyUuid(String accessId, String refreshId) {
+        return refreshId.equals(accessId);
     }
 
     private boolean hasAuthorities(User user) {
